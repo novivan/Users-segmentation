@@ -49,6 +49,17 @@ public class Group {
     }
 
     public void setNewUsers(ArrayList<Integer> NU) {
-        users_id = new ArrayList<>(NU);
+        users_id = new ArrayList<Integer>(NU);
+    }
+
+    public String toString() {
+        String ret = new String("");
+        Integer ID = id;
+        ret += "Группа номер " + ID.toString() + " под названием \"" + name + "\". Пользователи(id):\n";
+        for (Integer usr: users_id) {
+            ret += " -- " + usr.toString() + "\n";
+        }
+        ret += "\n";
+        return ret;
     }
 }

@@ -44,4 +44,5 @@ public class User {
     public void setNewGroups(ArrayList<Integer> NG) {
         groups = new ArrayList<Integer>(NG);
     }
+
 }
