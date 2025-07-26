@@ -4,10 +4,13 @@ package com.example.app;
 import jakarta.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 
 //импорты из сторонних библиотек/фреймворковЖ
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PostMapping;
 
 //импорты из уже написанных классов:
 // - 
@@ -53,6 +56,35 @@ public class Controller {
         groups.add(NG);
     }
 
+    public void distributeGroupRandomly(int id, int percentige) {
+        if (percentige > 100) {
+            distributeGroupRandomly(id, 100);
+            return;
+        }
+        if (percentige < 0) {
+            distributeGroupRandomly(id, 0);
+            return;
+        }
+        //сначала всех перетираем
+        Group currentGroup = groups.get(id - 1);
+        for (Integer i : currentGroup.getUsers()) {
+            User currentUser = users.get(i - 1);
+            currentUser.deleteGroup(id);
+            //currentGroup.deleteUser(i);
+        }
+        currentGroup.getUsers().clear();
+        
+        //а потом рандом уже
+        Random random = new Random();
+        for (int i = 0; i < users.size(); ++i) {
+            int randomInt = random.nextInt(100);
+            if (randomInt < percentige) {
+                currentGroup.addUser(i + 1);
+                users.get(i).addGroup(id);
+            }
+        }
+    }
+
     public void printGroups() { // для дебага
         Integer groups_amount = groups.size();
         Integer users_amount = users.size();
@@ -86,5 +118,14 @@ public class Controller {
             ret += gr.toString() + "\n";
         }
         return ret;
+    }
+    
+    //Оба параметра передаются в URL, например: 
+    // curl -X POST "http://localhost:8080/distribute_group_randomly?id=2&percentige=30"
+    @PostMapping("/distribute_group_randomly")
+    public String distribute_group_randomly(@RequestParam int id, @RequestParam int percentige) {
+        distributeGroupRandomly(id, percentige);
+        Integer ID = id;
+        return "Группа \"" + groups.get(id - 1).getName() + "\" c номером(id) " + ID.toString() + " распределена случайным образом";
     }
 }
