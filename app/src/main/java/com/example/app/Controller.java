@@ -56,6 +56,12 @@ public class Controller {
         groups.add(NG);
     }
 
+    public void deleteGroup(int id) {
+        //тут пока есть проблема, потому что я плотно связал индексы и id. 
+        // Поэтому нужно переписать все на поиск по id, а не индексу, но это долго.
+        // Поэтому лучше всего переписать на дерево!!!!
+    }
+
     public void distributeGroupRandomly(int id, int percentige) {
         if (percentige > 100) {
             distributeGroupRandomly(id, 100);
@@ -139,4 +145,7 @@ public class Controller {
         Integer amount = groups.size();
         return "Группа \"" + name + "\" с номером(id) " + amount.toString() + " создана.";
     }
+
+
+    
 }
