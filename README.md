@@ -1,21 +1,12 @@
 # Users-segmentation
-(пока без систем сборки потыкать хочу)
 ---
-для начала:
---
+очистка target и сборка проекта заново:
 ```
-javac -d <куда кидать .class файлы> <.java файлы>
+mvn clean package  
 ```
---
+(clean для очистки, package - сборки)
+
+запуск SpringBoot приложения:
 ```
-java -cp <папка с .class файлами> <Название файла с public statis void main>
+mvn spring-boot:run
 ```
---
-В нашем случае(пока):
-```
-javac -d build Man.java
-```
-```
-java -cp build Main
-```
----

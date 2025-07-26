@@ -1,3 +1,5 @@
+package com.example.app;
+
 import java.util.ArrayList;
 
 import java.lang.String; //кажись оно итак везде импортируется
@@ -10,6 +12,7 @@ public class User {
     private final int id;
     private ArrayList<Integer> groups; //id-шники
     //TODO: Заменить потом на какую-то нормальную структуру данных (например, древовидную)
+    //наверное даже на бд
 
     User() {
         id = ++counter;

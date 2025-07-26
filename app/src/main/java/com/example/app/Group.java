@@ -1,3 +1,5 @@
+package com.example.app;
+
 import java.util.ArrayList;
 
 public class Group {
@@ -44,6 +46,7 @@ public class Group {
 
     public void deleteUser(int user_id) { //тут заранее предполагаем, что в списке только одно такое ID 
             //(ПЕРЕПИСАТЬ НА ДЕРЕВО!!!)
+            //наверное даже на бд
         Integer U_Id = user_id;
         users_id.remove(U_Id);
     }
@@ -52,7 +55,7 @@ public class Group {
         users_id = new ArrayList<Integer>(NU);
     }
 
-    public String toString() {
+    public String toString() {  // в основном для дебага
         String ret = new String("");
         Integer ID = id;
         ret += "Группа номер " + ID.toString() + " под названием \"" + name + "\". Пользователи(id):\n";

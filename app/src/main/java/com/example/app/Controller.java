@@ -1,3 +1,5 @@
+package com.example.app;
+
 import java.util.ArrayList;
 
 public class Controller {
@@ -21,7 +23,7 @@ public class Controller {
         groups.add(NG);
     }
 
-    public void printGroups() {
+    public void printGroups() { // для дебага
         Integer groups_amount = groups.size();
         Integer users_amount = users.size();
         System.out.println("Всего: " + groups_amount.toString() + " групп и " + users_amount.toString() + " пользователей\n");
@@ -29,8 +31,4 @@ public class Controller {
             System.out.println(gr.toString());
         }
     }
-
-
-
-
 }
