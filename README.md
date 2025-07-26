@@ -28,3 +28,7 @@ curl http://localhost:8080/get_groups
 ```
 curl -X POST "http://localhost:8080/distribute_group_randomly?id=2&percentige=5"
 ```
+5) создать новую группу людей и перечислить их id (для добавления):
+```
+curl -X POST "http://localhost:8080/add_group?name=TypicalGroupName&usersIncluded=1&usersIncluded=3&usersIncluded=5&usersIncluded=7&usersIncluded=9"
+```

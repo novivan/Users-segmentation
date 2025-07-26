@@ -73,7 +73,7 @@ public class Controller {
             //currentGroup.deleteUser(i);
         }
         currentGroup.getUsers().clear();
-        
+
         //а потом рандом уже
         Random random = new Random();
         for (int i = 0; i < users.size(); ++i) {
@@ -127,5 +127,16 @@ public class Controller {
         distributeGroupRandomly(id, percentige);
         Integer ID = id;
         return "Группа \"" + groups.get(id - 1).getName() + "\" c номером(id) " + ID.toString() + " распределена случайным образом";
+    }
+
+    // same:
+    // curl -X POST "http://localhost:8080/add_group?name=TypicalGroupName&usersIncluded=1&usersIncluded=3&usersIncluded=5&usersIncluded=7&usersIncluded=9"
+    //проблема с громоздким перечислением массива но пока так
+    @PostMapping("add_group")
+    public String add_group(@RequestParam String name, @RequestParam ArrayList<Integer> usersIncluded) {
+        addGroup(name, usersIncluded);
+
+        Integer amount = groups.size();
+        return "Группа \"" + name + "\" с номером(id) " + amount.toString() + " создана.";
     }
 }
