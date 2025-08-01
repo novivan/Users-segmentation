@@ -1,8 +1,7 @@
 package com.example.app;
 
 import java.util.ArrayList;
-
-import java.lang.String; //кажись оно итак везде импортируется
+import java.util.TreeSet;
 
 
 public class User {
@@ -10,42 +9,40 @@ public class User {
     private static int counter = 0;
 
     private final int id;
-    private ArrayList<Integer> groups; //id-шники
-    //TODO: Заменить потом на какую-то нормальную структуру данных (например, древовидную)
-    //наверное даже на бд
+    //private ArrayList<Integer> groups; //id-шники
+    private TreeSet<Integer> groups; //id-шники
+    
 
     User() {
         id = ++counter;
-        groups = new ArrayList<Integer>();
+        groups = new TreeSet<Integer>();
     }
 
     User(ArrayList<Integer> Groups) {
         id = ++counter;
-        groups = new ArrayList<Integer> (Groups);
+        groups = new TreeSet<Integer>();
+        groups.addAll(Groups);
     }
 
     public int getId() {
         return id;
     }
 
-    public ArrayList<Integer> getGroups() {
+    public TreeSet<Integer> getGroups() {
         return groups;
     }
 
-    public void addGroup(int gr_id) { //оптимизировать деревом
-        if (!groups.contains(gr_id)) {
-            groups.add(gr_id);
-        }
+    public void addGroup(int gr_id) {
+        groups.add(gr_id);
     }
 
-    public void deleteGroup(int gr_id) { //тут заранее предполагаем, что в списке только одно такое ID 
-                                        //(ПЕРЕПИСАТЬ НА ДЕРЕВО!!!)
-        Integer Gr_Id = gr_id;
-        groups.remove(Gr_Id);
+    public void deleteGroup(int gr_id) { 
+        groups.remove(gr_id);
     }
 
     public void setNewGroups(ArrayList<Integer> NG) {
-        groups = new ArrayList<Integer>(NG);
+        groups.clear();
+        groups.addAll(NG);
     }
 
 }

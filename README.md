@@ -1,5 +1,9 @@
 # Users-segmentation
 ---
+перед сборкой и запуском перейти в каталог проекта:
+```
+cd app
+```
 очистка target и сборка проекта заново:
 ```
 mvn clean package  
@@ -12,6 +16,11 @@ mvn spring-boot:run
 ```
 ---
 Все примеры запросов пока будут тут.
+Порт в запросах нужно указывать в соответствии с логом в консоли при запуске:
+```
+Tomcat initialized with port 8080
+```
+(примерно такое должно быть в логах)
 1) проверка связи:
 ```
 curl http://localhost:8080/hello 
@@ -31,4 +40,8 @@ curl -X POST "http://localhost:8080/distribute_group_randomly?id=2&percentige=5"
 5) создать новую группу людей и перечислить их id (для добавления):
 ```
 curl -X POST "http://localhost:8080/add_group?name=TypicalGroupName&usersIncluded=1&usersIncluded=3&usersIncluded=5&usersIncluded=7&usersIncluded=9"
+```
+6) удалить группу по id:
+```
+curl -X POST "http://localhost:8080/delete_group?id=2"
 ```
