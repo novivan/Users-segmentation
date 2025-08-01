@@ -173,4 +173,40 @@ public class Controller {
         deleteGroup(id);
         return "Группа с id = " + ID.toString() + " удалена";
     }
+
+    @PostMapping("/add_user_to_group")
+    public String add_user_to_group(@RequestParam int user_id, @RequestParam int group_id) {
+        if (user_id > users.size() | user_id <= 0) {
+            return "Пользователя с таким id не существует";
+        }
+        Group currentGroup = groups.get(group_id);
+        Integer groupID = group_id;
+        if (currentGroup == null) {
+            return "Группы с таким id не существует";
+        }
+        currentGroup.addUser(user_id);
+        users.get(user_id - 1).addGroup(groupID);
+
+        Integer userId = user_id;
+        return "Пользователь с id = " + userId.toString() + " добавлен в группу с id = " + groupID.toString();
+    }
+
+    @PostMapping("/remove_user_from_group") 
+    public String remove_user_from_group(@RequestParam int user_id, @RequestParam int group_id) {
+        if (user_id > users.size() | user_id <= 0) {
+            return "Пользователя с таким id не существует";
+        }
+        Group currentGroup = groups.get(group_id);
+        Integer groupID = group_id;
+        if (currentGroup == null) {
+            return "Группы с таким id не существует";
+        }
+
+        currentGroup.deleteUser(user_id);
+        users.get(user_id - 1).deleteGroup(groupID);
+
+        Integer userId = user_id;
+        return "Пользователь с id = " + userId.toString() + " удален из группы с id = " + groupID.toString();
+    }
+
 }

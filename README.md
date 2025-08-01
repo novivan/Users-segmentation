@@ -45,3 +45,11 @@ curl -X POST "http://localhost:8080/add_group?name=TypicalGroupName&usersInclude
 ```
 curl -X POST "http://localhost:8080/delete_group?id=2"
 ```
+7) добавить пользователя в группу:
+```
+curl -X POST "http://localhost:8080/add_user_to_group?user_id=704&group_id=2"
+```
+8) удалить пользователя из группы:
+```
+curl -X POST "http://localhost:8080/remove_user_from_group?user_id=704&group_id=2"
+```
