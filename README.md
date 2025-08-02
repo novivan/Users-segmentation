@@ -15,7 +15,7 @@ mvn clean package
 mvn spring-boot:run
 ```
 ---
-Все примеры запросов пока будут тут.
+Все примеры запросов тут.
 Порт в запросах нужно указывать в соответствии с логом в консоли при запуске:
 ```
 Tomcat initialized with port 8080
@@ -52,4 +52,19 @@ curl -X POST "http://localhost:8080/add_user_to_group?user_id=704&group_id=2"
 8) удалить пользователя из группы:
 ```
 curl -X POST "http://localhost:8080/remove_user_from_group?user_id=704&group_id=2"
+```
+---
+Если вы хотите заранее задать приложению конкретный порт, нужно в файле application.properties (в папке Users-segmentation/app/src/main/resources) добавить следующую строку:
+```
+server.port=8080
+```
+---
+Swagger UI и OpenAPI можно открыть по адресам(как и все остальное, с поправкой на ваш порт):
+Swagger
+```
+http://localhost:8080/swagger-ui.html
+```
+OpenAPI
+```
+http://localhost:8080/v3/api-docs
 ```
