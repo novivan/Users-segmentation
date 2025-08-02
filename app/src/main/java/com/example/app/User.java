@@ -1,48 +1,55 @@
 package com.example.app;
 
-import java.util.ArrayList;
-import java.util.TreeSet;
+import java.util.HashSet;
+import java.util.Set;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
 
-public class User {
+@Entity
+@Table(name = "users") //без этого пытается создать user, а это слово зарезервировано
+public class User implements Comparable<User> {
     // ТУТ МЫ НЕ БУДЕМ ВЛАЗИТЬ В ПОЛЯ ГРУПП, ВСЕ ЭТО БУДЕТ ДЕЛАТЬ КОНТРОЛЛЕР
-    private static int counter = 0;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer id;
 
-    private final int id;
-    //private ArrayList<Integer> groups; //id-шники
-    private TreeSet<Integer> groups; //id-шники
+    @ManyToMany
+    @JoinTable(
+        name = "user_group",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "group_id")
+    )
+
+    private Set<Group> groups = new HashSet<>();
+
+    @Override
+    public int compareTo(User other) {
+        return Integer.compare(this.id, other.id);
+    }
     
-
-    User() {
-        id = ++counter;
-        groups = new TreeSet<Integer>();
-    }
-
-    User(ArrayList<Integer> Groups) {
-        id = ++counter;
-        groups = new TreeSet<Integer>();
-        groups.addAll(Groups);
-    }
+    //конструктор по умолчанию для JPA
+    User() {}
 
     public int getId() {
         return id;
     }
 
-    public TreeSet<Integer> getGroups() {
+    public Set<Group> getGroups() {
         return groups;
     }
 
-    public void addGroup(int gr_id) {
-        groups.add(gr_id);
+    public void addGroup(Group group) {
+        groups.add(group);
     }
 
-    public void deleteGroup(int gr_id) { 
-        groups.remove(gr_id);
+    public void deleteGroup(Group group) {
+        groups.remove(group);
     }
-
-    public void setNewGroups(ArrayList<Integer> NG) {
-        groups.clear();
-        groups.addAll(NG);
-    }
-
 }

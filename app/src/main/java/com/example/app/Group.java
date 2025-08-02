@@ -1,34 +1,42 @@
 package com.example.app;
 
-import java.util.ArrayList;
-import java.util.TreeSet;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Comparator;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "groups") //без этого пытается создать group, а это слово зарезервировано
 public class Group {
     // ТУТ МЫ НЕ БУДЕМ ВЛАЗИТЬ В ПОЛЯ ЮЗЕРОВ, ВСЕ ЭТО БУДЕТ ДЕЛАТЬ КОНТРОЛЛЕР
-    private static int counter = 0;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer id;
 
-    private final int id;
     private String name;
-    //private ArrayList<Integer> users_id;
-    private TreeSet<Integer> users_id;
+
+    @ManyToMany(mappedBy = "groups")
+    private Set<User> users = new HashSet<>();
+
+    public Group() {}
 
     Group(String Name) {
-        id = ++counter;
         name = new String(Name);
-        //users_id = new ArrayList<Integer>();
-        users_id = new TreeSet<Integer>();
     }
 
-    Group(String Name, ArrayList<Integer> Users) {
-        id = ++counter;
+    Group(String Name, Set<User> Users) {
         name = new String(Name);
-        //users_id = new ArrayList<Integer>(Users);
-        users_id = new TreeSet<Integer>();
-        users_id.addAll(Users);
-        // ну или: users_id = new TreeSet<Integer>(Users);
+        users.clear();
+        users = new HashSet<User>(Users);
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -40,35 +48,30 @@ public class Group {
         name = new String(newName);
     }
 
-    public TreeSet<Integer> getUsers() {
-        return users_id;
+    public Set<User> getUsers() {
+        return users;
     }
 
-    public void addUser(int user_id) {
-        users_id.add(user_id);
+    public void addUser(User user) {
+        users.add(user);
     }
 
-    public void deleteUser(int user_id) { 
-        users_id.remove(user_id);
-        //Integer U_Id = user_id;
-        //users_id.remove(U_Id);
+    public void deleteUser(User user) { 
+        users.remove(user);
     }
+    
+    @Override
+    public String toString() {
+        StringBuilder ret = new StringBuilder();
+        ret.append("Группа номер ").append(id)
+        .append(" под названием \"").append(name)
+        .append("\". Пользователи(id):\n");
 
-    public void setNewUsers(ArrayList<Integer> NU) {
-        //users_id = new ArrayList<Integer>(NU);
-        users_id.clear();
-        users_id = new TreeSet<Integer>();
-        users_id.addAll(NU);
-    }
-
-    public String toString() {  // в основном для дебага
-        String ret = new String("");
-        Integer ID = id;
-        ret += "Группа номер " + ID.toString() + " под названием \"" + name + "\". Пользователи(id):\n";
-        for (Integer usr: users_id) {
-            ret += " -- " + usr.toString() + "\n";
-        }
-        ret += "\n";
-        return ret;
+        users.stream()
+            .sorted(Comparator.comparingInt(User::getId))
+            .forEach(user -> ret.append(" -- ").append(user.getId()).append("\n"));
+        
+        ret.append("\n");
+        return ret.toString();
     }
 }

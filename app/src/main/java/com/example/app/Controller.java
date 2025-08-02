@@ -1,80 +1,67 @@
 package com.example.app;
 
-//импорты из stl:
-import jakarta.annotation.PostConstruct;
-
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
 
-//import java.util.TreeSet;
-import java.util.TreeMap;
-
-//импорты из сторонних библиотек/фреймворковЖ
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
-
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class Controller {
-    //private ArrayList<Group> groups;
-    private TreeMap<Integer, Group> groups; // будем удалять, поэтому делаю дерево
-
-    private ArrayList<User> users; // по тз удалять ничего не надо, поэтому будет ArrayList
-    // добавляю в PostConstruct для тестирования
+    private final GroupRepository groupRepository;
+    private final UserRepository userRepository;
 
     //конструктор должен быть публичный, 
     // чтоб для него спринг мог забиндить добавление нужных
     // ему полей и методов
-    public Controller() {
-        groups = new TreeMap<Integer, Group>();
-        users = new ArrayList<User>();
-    }
-
-    
-
-    @PostConstruct //чисто чтоб юзеров накидать. В ТЗ такого нет даже
-    public void init() {
-        for (int i = 0; i < 1000; ++i) {
-            addUser();
-        }
-
-        ArrayList<Integer> allUsers = new ArrayList<>();
-        for (int i = 1; i <= 1000; i++) allUsers.add(i);
-
-        addGroup("All Users", allUsers);
-        addGroup("Children", new ArrayList<>(Arrays.asList(3, 4, 5)));
-        addGroup("Adults", new ArrayList<>(Arrays.asList(1, 2)));
+    @Autowired
+    public Controller(UserRepository UR, GroupRepository GR) {
+        userRepository = UR;
+        groupRepository = GR;
     }
 
     public void addUser() { //чисто чтоб юзеров накидать. В ТЗ такого нет даже
-        users.add(new User());
+        userRepository.save(new User());
     }
 
-    public void addGroup(String name, ArrayList<Integer> usersIncluded) {
-        Group NG = new Group(name, usersIncluded);
-        for (Integer usrID : usersIncluded) {
-            if (usrID.intValue() - 1 < users.size() & usrID.intValue() >= 0) {
-                users.get(usrID.intValue() - 1).addGroup(NG.getId());
-            }
-        }
-        groups.put(NG.getId(), NG);
+    public Integer addGroup(String name, List<Integer> usersIncluded) {
+        Group NG = new Group(name);
+        groupRepository.save(NG);
+
+        usersIncluded.stream()
+            .map(userRepository::findById)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .forEach(user -> {
+                user.addGroup(NG);
+                userRepository.save(user);
+                NG.addUser(user);
+            });
+        groupRepository.save(NG);
+        return NG.getId();
     }
 
     public void deleteGroup(int id) {
-        Group GroupToDelete = groups.get(id);
-        if (GroupToDelete == null) {
-            return;
-        }
-        for (Integer usrID: GroupToDelete.getUsers()) {
-            users.get(usrID.intValue() - 1).deleteGroup(id);
-        }
-        groups.remove(id);
+        groupRepository.findById(id).ifPresent(group -> {
+            for (User user : new HashSet<>(group.getUsers())) {
+                user.deleteGroup(group);
+                userRepository.save(user);
+                //и на всякий:
+                group.deleteUser(user);
+            }
+            //тоже на всякий:
+            groupRepository.save(group);
+
+            groupRepository.deleteById(id);
+        });
     }
 
     public void distributeGroupRandomly(int id, int percentige) {
@@ -86,54 +73,48 @@ public class Controller {
             distributeGroupRandomly(id, 0);
             return;
         }
-        //сначала всех перетираем
-        Group currentGroup = groups.get(id);
-        for (Integer i : currentGroup.getUsers()) {
-            User currentUser = users.get(i - 1);
-            currentUser.deleteGroup(id);
-            //currentGroup.deleteUser(i);
-        }
-        currentGroup.getUsers().clear();
-
-        //а потом рандом уже
-        Random random = new Random();
-        for (int i = 0; i < users.size(); ++i) {
-            int randomInt = random.nextInt(100);
-            if (randomInt < percentige) {
-                currentGroup.addUser(i + 1);
-                users.get(i).addGroup(id);
+        groupRepository.findById(id).ifPresent(group -> {
+            //сначала всех перетираем
+            for (User user : group.getUsers()) {
+                user.deleteGroup(group);
+                userRepository.save(user);
             }
-        }
+            group.getUsers().clear();
+            groupRepository.save(group);
+            //а потом рандом уже
+            Random random = new Random();
+            for (User user : userRepository.findAll()) {
+                if (random.nextInt(100) < percentige) {
+                    user.addGroup(group);
+                    userRepository.save(user);
+                    group.addUser(user);
+                }
+            }
+            groupRepository.save(group);
+        });
     }
 
-    public void printGroups() { // для дебага
-        Integer groups_amount = groups.size();
-        Integer users_amount = users.size();
-        System.out.println("Всего: " + groups_amount.toString() + " групп и " + users_amount.toString() + " пользователей\n\n");
-        for (Group gr: groups.values()) {
-            System.out.println(gr.toString());
-        }
-    }
-
-    //тут сделаем APIшные штуки:
+    //тут сделаем APIшные ручки:
     @GetMapping("/hello")
     public String hello() {
         return "Hello, World!";
     }
 
     @GetMapping("/add_user")
+    @Transactional
     public String add_user() {
         addUser();
-        Integer users_amount = users.size();
+        Long users_amount = userRepository.count();
         return "Добавлен новый пользователь. Теперь их " + users_amount.toString() + "\n";
     }
 
     @GetMapping("/get_groups")
+    @Transactional
     public String get_groups() {
-        Integer groups_amount = groups.size();
-        Integer users_amount = users.size();
+        Long groups_amount = groupRepository.count();
+        Long users_amount = userRepository.count();
         String ret = "Всего: " + groups_amount.toString() + " групп и " + users_amount.toString() + " пользователей\n";
-        for (Group gr : groups.values()) {
+        for (Group gr : groupRepository.findAll()) {
             ret += gr.toString() + "\n";
         }
         return ret;
@@ -142,71 +123,77 @@ public class Controller {
     //Оба параметра передаются в URL, например: 
     // curl -X POST "http://localhost:8080/distribute_group_randomly?id=2&percentige=30"
     @PostMapping("/distribute_group_randomly")
+    @Transactional
     public String distribute_group_randomly(@RequestParam int id, @RequestParam int percentige) {
-        Group currentGroup = groups.get(id);
         Integer ID = id;
-        if (currentGroup == null) {
-            return "Группа с id = " + ID.toString() + " не была создана";
-        }
-        distributeGroupRandomly(id, percentige);
-        return "Группа \"" + groups.get(id).getName() + "\" c номером(id) " + ID.toString() + " распределена случайным образом";
+        AtomicReference<String> ret = new AtomicReference<>(new String(" \"Группа с id = \" + ID.toString() + \" не была создана\""));
+        groupRepository.findById(id).ifPresent(group -> {
+            distributeGroupRandomly(id, percentige);
+            ret.set("Группа \"" + group.getName() + "\" c номером(id) " + ID.toString() + " распределена случайным образом");  
+        });
+        return ret.get();
     }
 
     // same:
     // curl -X POST "http://localhost:8080/add_group?name=TypicalGroupName&usersIncluded=1&usersIncluded=3&usersIncluded=5&usersIncluded=7&usersIncluded=9"
     //проблема с громоздким перечислением массива но пока так
     @PostMapping("/add_group")
+    @Transactional
     public String add_group(@RequestParam String name, @RequestParam ArrayList<Integer> usersIncluded) {
-        addGroup(name, usersIncluded);
-
-        Integer amount = groups.size();
-        return "Группа \"" + name + "\" с номером(id) " + amount.toString() + " создана";
+        Integer ID = addGroup(name, usersIncluded);
+        return "Группа \"" + name + "\" с номером(id) " + ID.toString() + " создана";
     }
 
+    //и тд
     @PostMapping("/delete_group")
+    @Transactional
     public String delete_group(@RequestParam int id) {
-        Group currentGroup = groups.get(id);
         Integer ID = id;
-        if (currentGroup == null) {
-            return "Группу с id = " + ID.toString() + " нельзя удалить, тк она не была создана";
-        }
-        deleteGroup(id);
-        return "Группа с id = " + ID.toString() + " удалена";
+        AtomicReference<String> ret = new AtomicReference<>(new String("Группу с id = " + ID.toString() + " нельзя удалить, тк она не была создана"));
+        groupRepository.findById(id).ifPresent(group -> {
+            deleteGroup(id);
+            ret.set("Группа с id = " + ID.toString() + " удалена");  
+        });
+        return ret.get();
     }
 
     @PostMapping("/add_user_to_group")
+    @Transactional
     public String add_user_to_group(@RequestParam int user_id, @RequestParam int group_id) {
-        if (user_id > users.size() | user_id <= 0) {
+        if (user_id > userRepository.count() | user_id <= 0) {
             return "Пользователя с таким id не существует";
         }
-        Group currentGroup = groups.get(group_id);
         Integer groupID = group_id;
-        if (currentGroup == null) {
-            return "Группы с таким id не существует";
-        }
-        currentGroup.addUser(user_id);
-        users.get(user_id - 1).addGroup(groupID);
-
-        Integer userId = user_id;
-        return "Пользователь с id = " + userId.toString() + " добавлен в группу с id = " + groupID.toString();
+        AtomicReference<String> ret = new AtomicReference<>(new String("Группы с таким id не существует"));
+        groupRepository.findById(group_id).ifPresent(group -> {
+            User user = userRepository.findById(user_id).get();
+            Integer userId = user_id;
+            group.addUser(user);
+            groupRepository.save(group);
+            user.addGroup(group);
+            userRepository.save(user);
+            ret.set("Пользователь с id = " + userId.toString() + " добавлен в группу с id = " + groupID.toString());  
+        });
+        return ret.get();
     }
 
     @PostMapping("/remove_user_from_group") 
+    @Transactional
     public String remove_user_from_group(@RequestParam int user_id, @RequestParam int group_id) {
-        if (user_id > users.size() | user_id <= 0) {
+        if (user_id > userRepository.count() | user_id <= 0) {
             return "Пользователя с таким id не существует";
         }
-        Group currentGroup = groups.get(group_id);
         Integer groupID = group_id;
-        if (currentGroup == null) {
-            return "Группы с таким id не существует";
-        }
-
-        currentGroup.deleteUser(user_id);
-        users.get(user_id - 1).deleteGroup(groupID);
-
-        Integer userId = user_id;
-        return "Пользователь с id = " + userId.toString() + " удален из группы с id = " + groupID.toString();
+        AtomicReference<String> ret = new AtomicReference<>(new String("Группы с таким id не существует"));
+        groupRepository.findById(group_id).ifPresent(group -> {
+            User user = userRepository.findById(user_id).get();
+            Integer userId = user_id;
+            group.deleteUser(user);
+            groupRepository.save(group);
+            user.deleteGroup(group);
+            userRepository.save(user);
+            ret.set("Пользователь с id = " + userId.toString() + " удален из группы с id = " + groupID.toString());  
+        });
+        return ret.get();
     }
-
 }
