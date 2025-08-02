@@ -1,6 +1,7 @@
 package com.example.app;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -195,5 +196,24 @@ public class Controller {
             ret.set("Пользователь с id = " + userId.toString() + " удален из группы с id = " + groupID.toString());  
         });
         return ret.get();
+    }
+
+    @PostMapping("get_groups_for_user")
+    @Transactional
+    public String get_groups_for_user(@RequestParam int user_id) {
+        if (user_id > userRepository.count() | user_id <= 0) {
+            return "Пользователя с таким id не существует";
+        }
+        Integer ID = user_id;
+        StringBuilder ret = new StringBuilder();
+        ret.append("Группы пользователя с id = " + ID.toString() + ":\n");
+        User usr = userRepository.findById(user_id).get();
+
+        usr.getGroups().stream()
+        .sorted(Comparator.comparingInt(Group::getId))
+        .forEach(gr -> ret.append(" -- группа номер ").append(gr.getId()).append("(\"").append(gr.getName()).append("\")\n"));
+
+        ret.append("\n");
+        return ret.toString();
     }
 }

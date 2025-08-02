@@ -54,6 +54,10 @@ curl -X POST "http://localhost:8080/add_user_to_group?user_id=704&group_id=2"
 ```
 curl -X POST "http://localhost:8080/remove_user_from_group?user_id=704&group_id=2"
 ```
+9) Получить список сегментов, в которых состоит пользователь по user_id:
+```
+curl -X POST "http://localhost:8080/get_groups_for_user?user_id=1"
+```
 ---
 Если вы хотите заранее задать приложению конкретный порт, нужно в файле application.properties (в папке Users-segmentation/app/src/main/resources) добавить следующую строку:
 ```

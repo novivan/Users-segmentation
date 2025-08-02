@@ -37,12 +37,12 @@ public class InitService implements ApplicationRunner {
                                     .collect(Collectors.toList())
         );
 
-        controller.addGroup("Children", allUsers.stream().filter(u -> List.of(1, 2).contains(u.getId()))
+        controller.addGroup("Parents", allUsers.stream().filter(u -> List.of(1, 2).contains(u.getId()))
                                     .map(User::getId)
                                     .collect(Collectors.toList())
         );
 
-        controller.addGroup("Parents", allUsers.stream().filter(u -> List.of(3, 4, 5).contains(u.getId()))
+        controller.addGroup("Children", allUsers.stream().filter(u -> List.of(3, 4, 5).contains(u.getId()))
                                     .map(User::getId)
                                     .collect(Collectors.toList())
         );

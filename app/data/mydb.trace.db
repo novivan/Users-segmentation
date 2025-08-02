@@ -1,4 +1,4 @@
-2025-08-02 16:11:15.486817+03:00 database: close
+2025-08-02 16:45:19.863559+03:00 database: close
 org.h2.message.DbException: Ошибка ввода/вывода: "Closing"
 IO Exception: "Closing" [90028-232]
 	at org.h2.message.DbException.get(DbException.java:212)
